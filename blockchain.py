@@ -11,32 +11,32 @@ class Blockchain:
 
     def __init__(self):
         self.chain = []
-        self.create_block(previous_hash = '0',data="-1")
+        self.createblock(previoushash = '0',data="-1")
 
-    def create_block(self, previous_hash,data):
+    def createblock(self, previoushash,data):
         block = {'index': len(self.chain) + 1,
                  'data':data,
                  'timestamp': str(datetime.datetime.now()),
-                 'previous_hash': previous_hash}
+                 'previoushash': previoushash}
         self.chain.append(block)
         return block
 
-    def get_previous_block(self):
+    def getpreviousblock(self):
         return self.chain[-1]
 
     def hash(self, block):
-        encoded_block = json.dumps(block, sort_keys = True).encode()
-        return hashlib.sha256(encoded_block).hexdigest()
+        encodedblock = json.dumps(block, sort_keys = True).encode()
+        return hashlib.sha256(encodedblock).hexdigest()
     
-    def is_chain_valid(self, chain):
-        previous_block = chain[0]
-        block_index = 1
-        while block_index < len(chain):
-            block = chain[block_index]
-            if block['previous_hash'] != self.hash(previous_block):
+    def ischainvalid(self, chain):
+        previousblock = chain[0]
+        blockindex = 1
+        while blockindex < len(chain):
+            block = chain[blockindex]
+            if block['previoushash'] != self.hash(previousblock):
                 return False
-            previous_block = block
-            block_index += 1
+            previousblock = block
+            blockindex += 1
         return True
 
 app = Flask(__name__)
@@ -45,10 +45,10 @@ app = Flask(__name__)
 blockchain = Blockchain()
 
 # Mining a new block
-@app.route('/mine_block', methods = ['GET'])
-def mine_block():
-    previous_block = blockchain.get_previous_block()
-    previous_hash = blockchain.hash(previous_block)
+@app.route('/mineblock', methods = ['GET'])
+def mineblock():
+    previousblock = blockchain.getpreviousblock()
+    previoushash = blockchain.hash(previousblock)
     
     
     #for demo purposes after sending request from post_man, 
@@ -57,26 +57,26 @@ def mine_block():
     data=input("enter transaction")
     
     
-    block = blockchain.create_block(previous_hash,data)
+    block = blockchain.createblock(previoushash,data)
     response = {'message': 'New Transaction!',
                 'index': block['index'],
                 'timestamp': block['timestamp'],
                 'data':data,
-                'previous_hash': block['previous_hash']}
+                'previoushash': block['previoushash']}
     return jsonify(response), 200
 
 # Getting the full Blockchain
-@app.route('/get_chain', methods = ['GET'])
-def get_chain():
+@app.route('/getchain', methods = ['GET'])
+def getchain():
     response = {'chain': blockchain.chain,
                 'length': len(blockchain.chain)}
     return jsonify(response), 200
 
 # Checking if the Blockchain is valid
-@app.route('/is_valid', methods = ['GET'])
-def is_valid():
-    is_valid = blockchain.is_chain_valid(blockchain.chain)
-    if is_valid:
+@app.route('/isvalid', methods = ['GET'])
+def isvalid():
+    isvalid = blockchain.ischainvalid(blockchain.chain)
+    if isvalid:
         response = {'message': 'The Blockchain is valid.'}
     else:
         response = {'message': 'The Blockchain is not valid.'}
